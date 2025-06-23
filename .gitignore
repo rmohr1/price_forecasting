@@ -1,0 +1,29 @@
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.so
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Environment files
+.env
+.envrc
+
+# Data folders
+data/raw/
+data/processed/
+data/external/
+
+# OS-specific
+.DS_Store
+
+# Jupyter runtime
+*.sqlite
+*.log
+
+# Streamlit state
+.streamlit/
+
+# VSCode
+.vscode/
