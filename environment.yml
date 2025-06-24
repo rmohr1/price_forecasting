@@ -1,0 +1,31 @@
+## 📦 environment.yml (Python Environment)
+
+name: nodal-forecasting
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pandas
+  - numpy
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - xgboost
+  - statsmodels
+  - jupyterlab
+  - jupyter
+  - plotly
+  - pymc
+  - arviz
+  - pyro-ppl
+  - pytorch
+  - requests
+  - beautifulsoup4
+  - sqlalchemy
+  - pip
+  - pip:
+      - PyBATS
+      - orbit-ml
+      - streamlit
+      - pycaiso
