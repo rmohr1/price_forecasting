@@ -3,20 +3,20 @@ import os
 import matplotlib.pyplot as plt
 
 # CONFIGURATION
-INPUT_FILE = "../../data/raw/caiso_rtm_test/dataset.csv"
-OUTPUT_FILE_5MIN = "../../data/processed/rtm_cleaned_5min.csv"
-OUTPUT_FILE_HOURLY = "../../data/processed/rtm_cleaned_hourly.csv"
+INPUT_FILE = "../../data/raw/caiso_demand_2DA/dataset.csv"
+OUTPUT_FILE_5MIN = "../../data/processed/demand_cleaned_5min.csv"
+OUTPUT_FILE_HOURLY = "../../data/processed/demand_cleaned_hourly.csv"
 TIME_COLUMN = "INTERVALSTARTTIME_GMT"
-PRICE_COLUMN = "LMP_PRC"
+PRICE_COLUMN = "SCE-TAC"
 
 # Ensure output directory exists
 os.makedirs(os.path.dirname(OUTPUT_FILE_5MIN), exist_ok=True)
 
 # Cleaning function
-def clean_rtm_data(input_file, time_col, price_col):
+def clean_demand_data(input_file, time_col, price_col):
     df = pd.read_csv(input_file)
     df = df.pivot_table(index=TIME_COLUMN, 
-                          columns=['XML_DATA_ITEM'],
+                          columns=['TAC_AREA_NAME'],
                           values=['MW'],
                           aggfunc='first').reset_index()
     
@@ -35,7 +35,10 @@ def clean_rtm_data(input_file, time_col, price_col):
 
     # Interpolate missing values
     for col in target_cols:
-        df[col] = df[col].interpolate(method="time")
+        try:
+            df[col] = df[col].interpolate(method="time")
+        except:
+            print('column ' + col + ' was dropped')
 
     return df
 
@@ -55,7 +58,7 @@ def plot_time_series(df, price_col, title, freq="D", sample_size=60):
 
 # MAIN EXECUTION
 if __name__ == "__main__":
-    df_5min = clean_rtm_data(INPUT_FILE, TIME_COLUMN, PRICE_COLUMN)
+    df_5min = clean_demand_data(INPUT_FILE, TIME_COLUMN, PRICE_COLUMN)
     df_5min.to_csv(OUTPUT_FILE_5MIN)
     print(f"✅ 5-minute cleaned data saved to: {OUTPUT_FILE_5MIN}")
 
@@ -66,7 +69,7 @@ if __name__ == "__main__":
 
     # Quick plots for sanity check
     print("📊 Plotting 5-minute (daily mean):")
-    plot_time_series(df_5min, PRICE_COLUMN, "CAISO RTM Price (5-minute, Daily Avg)", freq="D")
+    plot_time_series(df_5min, PRICE_COLUMN, "CAISO Demand (5-minute, Daily Avg)", freq="D")
 
     print("📊 Plotting hourly (daily mean):")
-    plot_time_series(df_hourly, PRICE_COLUMN, "CAISO RTM Price (Hourly, Daily Avg)", freq="D")
+    plot_time_series(df_hourly, PRICE_COLUMN, "CAISO Demand (Hourly, Daily Avg)", freq="D")
