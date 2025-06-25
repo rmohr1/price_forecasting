@@ -24,6 +24,7 @@ dependencies:
   - beautifulsoup4
   - sqlalchemy
   - pip
+  - lightgbm
   - pip:
       - PyBATS
       - orbit-ml
