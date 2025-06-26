@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 # CONFIGURATION
 INPUT_FILE = "../../data/raw/caiso_dam/dataset.csv"
+OUTPUT_FILE_5MIN = "../../data/processed/dam_cleaned_5min.csv"
 OUTPUT_FILE_HOURLY = "../../data/processed/dam_cleaned_hourly.csv"
 TIME_COLUMN = "INTERVALSTARTTIME_GMT"
 PRICE_COLUMN = "LMP_PRC"
@@ -12,7 +13,7 @@ PRICE_COLUMN = "LMP_PRC"
 os.makedirs(os.path.dirname(OUTPUT_FILE_HOURLY), exist_ok=True)
 
 # Cleaning function
-def clean_dam_data(input_file, time_col, price_col):
+def clean_data(input_file, time_col, price_col):
     df = pd.read_csv(input_file)
     df = df.pivot_table(index=TIME_COLUMN, 
                           columns=['XML_DATA_ITEM'],
@@ -30,11 +31,14 @@ def clean_dam_data(input_file, time_col, price_col):
     df = df.sort_values(time_col).drop_duplicates(subset=time_col)
 
     # Set index and fill missing intervals to 5-minute frequency
-    df = df.set_index(time_col).asfreq("1H")
+    df = df.set_index(time_col).asfreq("5min")
+
+    # Interpolate missing values
+    df = df.interpolate(method="pad")
 
     # Interpolate missing values
     for col in target_cols:
-        df[col] = df[col].interpolate(method="time")
+        df[col] = df[col].interpolate(method="pad")
 
     return df
 
@@ -54,7 +58,11 @@ def plot_time_series(df, price_col, title, freq="D", sample_size=60):
 
 # MAIN EXECUTION
 if __name__ == "__main__":
-    df_hourly = clean_dam_data(INPUT_FILE, TIME_COLUMN, PRICE_COLUMN)
+    df_5min = clean_data(INPUT_FILE, TIME_COLUMN, PRICE_COLUMN)
+    df_5min.to_csv(OUTPUT_FILE_5MIN)
+
+    print(f"✅ 5-minute cleaned data saved to: {OUTPUT_FILE_5MIN}")
+    df_hourly = df_5min.resample("h").mean()
     df_hourly.to_csv(OUTPUT_FILE_HOURLY)
 
     print("📊 Plotting hourly (daily mean):")
