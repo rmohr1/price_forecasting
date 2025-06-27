@@ -45,13 +45,19 @@ def load_and_prepare():
     df["2DA_LOAD_lag1"] = df["2DA_LOAD"].shift(1)
     df["RTPD_DMND_lag1"] = df['RTPD_DMND'].shift(1)
  
+    df.index = df.index.tz_convert('US/Pacific')
+    df.index.names = ['timestamp']
 
     # Time-based features
     df["hour"] = df.index.hour
     df["dayofweek"] = df.index.dayofweek
     df["month"] = df.index.month
+    df["year"] = df.index.year
     df["is_weekend"] = df.index.dayofweek >= 5
     df["is_night"] = (df.index.hour < 6) | (df.index.hour > 20)
+
+
+    df.index = df.index.tz_convert('UTC')
 
     # Drop NA rows
     df = df.dropna()
