@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import time
 import requests
@@ -6,7 +6,9 @@ import re
 import io
 import zipfile
 import pytz
+import os
 
+SLEEP_SECONDS = 20
 
 def get_df(
     response,
@@ -34,7 +36,7 @@ def get_df(
             z = zipfile.ZipFile(buffer)
 
         except zipfile.BadZipFile as e:
-            print("Bad zip file", e)
+            raise ValueError("Bad zip file", e)
 
         else:
             csv = z.open(z.namelist()[0])  # ignores all but first file in zip
@@ -48,18 +50,24 @@ def get_df(
 
     return df
 
-def oasis_api_pull(queryname: str, market: str, start: datetime, end: datetime, params: dict, timeout=20):
+def oasis_api_pull(
+        queryname: str, 
+        market: str, 
+        start: datetime, 
+        end: datetime, 
+        params: dict, 
+        timeout=20
+) -> pd.DataFrame:
     """
     Constructs a CAISO OASIS API query and returns a dataframe
 
     Args:
         queryname : report name to request
         market: report market
-        start: "YYYY-MM-DD"
-        end: "YYYY-MM-DD"
+        start: start datetime
+        end: end datetime
+        params: dict of extra request specific parameters
         timeout: requests query timeout
-        params dict: extra request specific parameters
-
 
     Returns:
         df (pandas.DataFrame): pandas dataframe
@@ -78,7 +86,6 @@ def oasis_api_pull(queryname: str, market: str, start: datetime, end: datetime, 
 
         Returns:
             tz_ : API compatible formatted and localized time string
-
         """
         tz_ = pytz.timezone(local_tz)
         return tz_.localize(dt).astimezone(pytz.UTC).strftime(fmt)
@@ -109,14 +116,70 @@ def oasis_api_pull(queryname: str, market: str, start: datetime, end: datetime, 
 
     #check for empty data file
     if re.search(r"\.xml\.zip;$", headers):
-        print("No data available for this query.")
+        raise ValueError("No data available for this query.")
 
     df = get_df(resp)
     return df
 
+def fetch_and_cache_data(
+        queryname: str, 
+        market: str, 
+        start_date: str, 
+        end_date: str, 
+        save_dir: str,
+        params: dict,
+        chunk_days: int = 7,
+        timeout=20
+):
+    """
+    Pulls data from the CAISO OASIS database, caches it, and then assembles into raw dataset
+
+    Args:
+        queryname : report name to request
+        market: report market
+        start: start date string "YYYY-MM-DD"
+        end: end date string "YYYY-MM-DD"
+        save_dir: relative directory string, creates and saves data there
+        params: dict of extra request specific parameters
+        timeout: requests query timeout
+
+    Returns:
+        df (pandas.DataFrame): pandas dataframe
+    """
+    # Ensure save directory exists
+    os.makedirs(save_dir, exist_ok=True)
+    
+    start_dt = datetime.fromisoformat(start_date)
+    end_dt = datetime.fromisoformat(end_date)
+    
+    all_chunks = []
+
+    chunk_start_dt = start_dt
+    while chunk_start_dt < end_dt:
+        #creates a time chunk and cache file
+        chunk_end_dt = min(chunk_start_dt + timedelta(days=chunk_days), end_dt)
+        chunk_str = f"{chunk_start_dt.date()}_to_{chunk_end_dt.date()}"
+        cache_file = os.path.join(save_dir, f"{queryname}_{market}_{chunk_str}.csv")
+
+        if os.path.exists(cache_file):
+            print(f"[✓] Skipping cached chunk: {chunk_str}")
+            df = pd.read_csv(cache_file, parse_dates=["INTERVALSTARTTIME_GMT"])
+        else:
+            print(f"[→] Fetching chunk: {chunk_str}")
+            df = oasis_api_pull(queryname, market, chunk_start_dt, chunk_end_dt, params=params)
+            df.to_csv(cache_file, index=False)
+            time.sleep(SLEEP_SECONDS)
+
+        all_chunks.append(df)
+        chunk_start_dt = chunk_end_dt
+    
+    df = pd.concat(all_chunks, ignore_index=True)
+    df.to_csv(os.path.join(save_dir, "dataset.csv"))
+
+    return df
+
 
 if __name__ == '__main__':
-    #df = fetch_lmp("SP15", "2025-01-01", "2025-01-10")
     start_dt = datetime.fromisoformat("2025-01-01")
     end_dt = datetime.fromisoformat("2025-01-10")  
     df = oasis_api_pull("SLD_FCST", "RTM", start_dt, end_dt)

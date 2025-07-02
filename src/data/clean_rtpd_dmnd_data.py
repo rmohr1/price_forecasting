@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 
 # CONFIGURATION
-INPUT_FILE = "../../data/raw/caiso_rtpd_dmnd/dataset.csv"
+INPUT_FILE = "../../data/raw/rtpd_dmnd/dataset.csv"
 OUTPUT_FILE_5MIN = "../../data/processed/rtpd_dmnd_cleaned_5min.csv"
 OUTPUT_FILE_HOURLY = "../../data/processed/rtpd_dmnd_cleaned_hourly.csv"
 TIME_COLUMN = "INTERVALSTARTTIME_GMT"
@@ -15,12 +15,6 @@ os.makedirs(os.path.dirname(OUTPUT_FILE_5MIN), exist_ok=True)
 # Cleaning function
 def clean_data(input_file, time_col, val_cols):
     df = pd.read_csv(input_file)
-    '''
-    df = df.pivot_table(index=TIME_COLUMN, 
-                          columns=['XML_DATA_ITEM'],
-                          values=[val_col],
-                          aggfunc='first').reset_index()
-    '''
     
     # Parse and sort timestamps
     df[time_col] = pd.to_datetime(df[time_col], format='mixed')

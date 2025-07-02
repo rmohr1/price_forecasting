@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 
 # CONFIGURATION
-INPUT_FILE = "../../data/raw/caiso_demand_2DA/dataset.csv"
+INPUT_FILE = "../../data/raw/dam_dmnd/dataset.csv"
 OUTPUT_FILE_5MIN = "../../data/processed/demand_cleaned_5min.csv"
 OUTPUT_FILE_HOURLY = "../../data/processed/demand_cleaned_hourly.csv"
 TIME_COLUMN = "INTERVALSTARTTIME_GMT"
