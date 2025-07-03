@@ -16,6 +16,9 @@ data/raw/
 data/processed/
 data/external/
 
+# Model folders
+models/
+
 # Scratch
 scratch/
 
