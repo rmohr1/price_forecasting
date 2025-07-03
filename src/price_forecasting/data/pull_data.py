@@ -1,3 +1,4 @@
+from price_forecasting.config import DATA_DIR
 from datetime import datetime, timedelta
 import pandas as pd
 import time
@@ -126,7 +127,7 @@ def fetch_and_cache_data(
         market: str, 
         start_date: str, 
         end_date: str, 
-        save_dir: str,
+        dir_name: str,
         params: dict,
         chunk_days: int = 7,
         timeout=20
@@ -139,15 +140,15 @@ def fetch_and_cache_data(
         market: report market
         start: start date string "YYYY-MM-DD"
         end: end date string "YYYY-MM-DD"
-        save_dir: relative directory string, creates and saves data there
+        dir_name: folder name, creates and saves data there within the data/raw path
         params: dict of extra request specific parameters
         timeout: requests query timeout
 
     Returns:
         df (pandas.DataFrame): pandas dataframe
     """
-    # Ensure save directory exists
-    os.makedirs(save_dir, exist_ok=True)
+    save_dir = (DATA_DIR / "raw") / dir_name # Define directory relative to DATA_DIR
+    os.makedirs(save_dir, exist_ok=True) # Ensure save directory exists
     
     start_dt = datetime.fromisoformat(start_date)
     end_dt = datetime.fromisoformat(end_date)
