@@ -4,7 +4,7 @@ from pull_data import fetch_and_cache_data
 # CONFIGURATION
 QUERYNAME = 'SLD_FCST' #Report to query
 MARKET = "RTM"  # Real-Time Market
-SAVE_DIR = "../../data/raw/rtpd_dmnd"  # Directory to save cached files
+SAVE_DIR = "rtpd_dmnd"  # Directory to save cached files
 START_DATE = "2023-01-01"
 END_DATE = "2025-06-23"
 CHUNK_DAYS = 7  # Number of days per API request

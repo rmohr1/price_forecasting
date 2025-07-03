@@ -3,7 +3,7 @@ from pull_data import fetch_and_cache_data
 # CONFIGURATION
 QUERYNAME = 'PRC_RTPD_LMP' #Report to query
 MARKET = "RTPD"  # Real-Time Market
-SAVE_DIR = "../../data/raw/rtpd_prc_test"  # Directory to save cached files
+SAVE_DIR = "rtpd_prc_test"  # Directory to save cached files
 START_DATE = "2023-01-01"
 END_DATE = "2025-06-23"
 CHUNK_DAYS = 7  # Number of days per API request
