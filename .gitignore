@@ -15,6 +15,9 @@ data/raw/
 data/processed/
 data/external/
 
+# Scratch
+scratch/
+
 # OS-specific
 .DS_Store
 
