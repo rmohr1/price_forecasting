@@ -39,11 +39,11 @@ find = { where = ["src"] }
 src = ["src"]
 exclude = ["data", ".venv", "__pycache__"]
 
-# Select rules (E=pycodestyle, F=pyflakes)
-select = ["E", "F"]
+# Select rules (E=pycodestyle, F=pyflakes, D=docstrings, I=imports, ANN=typehints)
+select = ["E", "F", "D", "I", "ANN"]
 
 # Enforce max line length
-line-length = 88  # Match Black's default
+line-length = 88 
 
 # Target Python version
 target-version = "py39"
