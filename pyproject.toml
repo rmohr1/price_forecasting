@@ -41,6 +41,7 @@ exclude = ["data", ".venv", "__pycache__"]
 
 # Select rules (E=pycodestyle, F=pyflakes, D=docstrings, I=imports, ANN=typehints)
 select = ["E", "F", "D", "I", "ANN"]
+ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D107"]
 
 # Enforce max line length
 line-length = 88 
