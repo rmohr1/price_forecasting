@@ -9,11 +9,18 @@ __pycache__/
 # Environment files
 .env
 .envrc
+*.egg-info/
 
 # Data folders
 data/raw/
 data/processed/
 data/external/
+
+# Model folders
+models/
+
+# Scratch
+scratch/
 
 # OS-specific
 .DS_Store

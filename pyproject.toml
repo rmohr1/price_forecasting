@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "price_forecasting"
+version = "0.1.0"
+description = "Project to demonstrate modeling CAISO energy prices."
+authors = [
+  { name = "Rob Mohr", email = "rcmohr4@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.9,<3.12"
+
+# Direct runtime dependencies of Python package
+dependencies = [
+    "pandas",
+    "scikit-learn",
+    "numpy",
+    "matplotlib",
+    "properscoring",
+    "requests",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[project.urls]
+Homepage = "https://github.com/rmohr1/price_forecasting"
+
+[tool.setuptools.packages]
+find = { where = ["src"] }
+
+[tool.ruff]
+# Set the paths Ruff should lint
+src = ["src"]
+exclude = ["data", ".venv", "__pycache__", "*/scratch"]
+
+# Select rules (E=pycodestyle, F=pyflakes, D=docstrings, I=imports, ANN=typehints)
+select = ["E", "F", "D", "I", "ANN"]
+ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D107"]
+
+# Enforce max line length
+line-length = 88 
+
+# Target Python version
+target-version = "py39"
+
+# Enable formatting 
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
