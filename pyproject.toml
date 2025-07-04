@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "price_forecasting"
 version = "0.1.0"
-description = "A data science project to demonstrate modeling CAISO energy prices."
+description = "Project to demonstrate modeling CAISO energy prices."
 authors = [
   { name = "Rob Mohr", email = "rcmohr4@gmail.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.9,<3.12"
 
-# Direct runtime dependencies of your Python package
+# Direct runtime dependencies of Python package
 dependencies = [
     "pandas",
     "scikit-learn",
@@ -25,9 +25,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
-#    "black",
-#    "ruff",
-#    "ipykernel",
+    "ruff",
 ]
 
 [project.urls]
@@ -36,9 +34,22 @@ Homepage = "https://github.com/rmohr1/price_forecasting"
 [tool.setuptools.packages]
 find = { where = ["src"] }
 
-#[tool.black]
-#line-length = 88
-#
-#[tool.ruff]
-#line-length = 88
-#select = ["E", "W", "F", "I", "B", "C", "N", "D"] # Example linter rules
+[tool.ruff]
+# Set the paths Ruff should lint
+src = ["src"]
+exclude = ["data", ".venv", "__pycache__"]
+
+# Select rules (E=pycodestyle, F=pyflakes)
+select = ["E", "F"]
+
+# Enforce max line length
+line-length = 88  # Match Black's default
+
+# Target Python version
+target-version = "py39"
+
+# Enable formatting 
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
