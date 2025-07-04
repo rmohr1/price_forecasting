@@ -37,7 +37,7 @@ find = { where = ["src"] }
 [tool.ruff]
 # Set the paths Ruff should lint
 src = ["src"]
-exclude = ["data", ".venv", "__pycache__"]
+exclude = ["data", ".venv", "__pycache__", "*/scratch"]
 
 # Select rules (E=pycodestyle, F=pyflakes, D=docstrings, I=imports, ANN=typehints)
 select = ["E", "F", "D", "I", "ANN"]
