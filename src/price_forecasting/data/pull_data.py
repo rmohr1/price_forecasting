@@ -22,12 +22,12 @@ def get_df(
     Converts requests.response to pandas.DataFrame
 
     Args:
-        r : requests response object
-        parse_dates (bool, list): which columns to parse dates if any
-        sort_values(list): which columsn to sort by if any
+        r: requests response object
+        parse_dates: which columns to parse dates if any
+        sort_values: which columsn to sort by if any
 
     Returns:
-        df (pandas.DataFrame): pandas dataframe
+        df: data converted to pandas dataframe
     """
 
     with io.BytesIO() as buffer:
@@ -71,7 +71,7 @@ def oasis_api_pull(
         timeout: requests query timeout
 
     Returns:
-        df (pandas.DataFrame): pandas dataframe
+        df: pandas dataframe
     """
 
     def _get_UTC_string(
