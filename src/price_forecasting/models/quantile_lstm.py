@@ -12,6 +12,7 @@ class QuantileLSTM(nn.Module):
         num_layers: int=2,
         dropout: float=0.2,
     )->nn.Module:
+    
         super(QuantileLSTM, self).__init__()
         self.lstm = nn.LSTM(
             input_size=input_size,
@@ -20,6 +21,7 @@ class QuantileLSTM(nn.Module):
             dropout=dropout,
             batch_first=True,
         )
+        self.quantiles = quantiles
         self.output_layer = nn.Linear(hidden_size, len(quantiles))
 
     def forward(self, x):
