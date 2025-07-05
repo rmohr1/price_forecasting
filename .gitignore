@@ -17,7 +17,7 @@ data/processed/
 data/external/
 
 # Model folders
-models/
+/models/
 
 # Scratch
 scratch/

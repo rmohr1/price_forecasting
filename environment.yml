@@ -16,10 +16,11 @@ dependencies:
   - plotly
   - pymc
   - pytorch
+  - pytest
   - requests
-  - pip
   - lightgbm
   - shap
+  - properscoring
+  - pip
   - pip:
       - -e .
-      - properscoring
