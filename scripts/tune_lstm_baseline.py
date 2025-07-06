@@ -12,7 +12,7 @@ from price_forecasting.utils.scoring_tools import get_mean_crps
 
 # optuna settings
 N_JOBS = 4
-N_TRIALS = 4
+N_TRIALS = 50
 
 # directory structuring
 MODEL_DIR = MODELS_DIR / 'LSTM_tuning'
@@ -35,7 +35,7 @@ def train_and_score_model(hidden_size, learning_rate, dropout, batch_size, trial
         "quantiles": quantiles,
         "learning_rate": learning_rate,
         "batch_size": batch_size,
-        "epochs": 1,
+        "epochs": 20,
         "dropout": dropout,
         "data_source": 'v1',
     }
