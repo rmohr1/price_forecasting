@@ -12,12 +12,11 @@ __pycache__/
 *.egg-info/
 
 # Data folders
-data/raw/
-data/processed/
-data/external/
+/data
 
-# Model folders
-models/
+# Model files
+*.pt
+*.npy
 
 # Scratch
 scratch/

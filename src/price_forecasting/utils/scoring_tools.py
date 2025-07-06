@@ -9,7 +9,6 @@ def get_mean_crps(
     y_true: Sequence,
     quantile_levels: Sequence,
     n_interpolated_samples: int = 1000,
-    random_seed: int = 101,
 ) -> float:
     """Calculate mean CRPS on quantiles by sampling piecewise-linear interpolation.
 
@@ -18,13 +17,11 @@ def get_mean_crps(
         y_true: Array of target values
         quantile_levels: Array of quantile levels
         n_interpolated_samples: Number of synthetic samples to generate per point.
-        random_seed: random seed for reproducibility
 
     Returns:
         float: Mean CRPS score for predictions.
 
     """
-    np.random.seed(random_seed)
     quantile_levels = np.array(quantile_levels)
 
     n_points = quantile_preds.shape[0]
