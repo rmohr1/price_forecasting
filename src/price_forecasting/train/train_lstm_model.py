@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 import torch
@@ -22,14 +24,22 @@ def create_dataloader(x, y, batch_size):
     return DataLoader(TensorDataset(x_tensor, y_tensor), batch_size=batch_size, 
                       shuffle=True, num_workers=0)
 
-def load_and_train(MODEL_DIR):
+def load_and_train(MODEL_DIR, config=None):
     # set up torch
     torch.manual_seed(101)
     np.random.seed(101)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # load config
-    config = load_config(MODEL_DIR / 'config.yaml')
+    # load config file or write config dict if passed
+    os.makedirs(MODEL_DIR, exist_ok=True)
+    if config is None:
+        with open(MODEL_DIR / 'config.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+    else:
+        with open(MODEL_DIR / 'config.yaml', 'w') as f:
+            yaml.safe_dump(config, f)
+
+    # define data source path
     DATA_SOURCE = PROCESSED_DATA_DIR / config['data_source']
 
     # load data
