@@ -25,6 +25,7 @@ def create_dataloader(x, y, batch_size):
 def load_and_train(MODEL_DIR):
     # set up torch
     torch.manual_seed(101)
+    np.random.seed(101)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # load config
@@ -64,7 +65,8 @@ def load_and_train(MODEL_DIR):
     model = QuantileLSTM(
         input_size=X_train.shape[-1],
         hidden_size=config['hidden_size'],
-        quantiles=config['quantiles']
+        quantiles=config['quantiles'],
+        dropout=config['dropout'],
     )
 
     y_pred = train(model, train_loader, val_loader, config, MODEL_DIR, device)
