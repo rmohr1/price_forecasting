@@ -4,6 +4,8 @@ from typing import Sequence
 import torch
 from torch.utils.data import DataLoader
 
+from price_forecasting.utils.scoring_tools import get_mean_crps
+
 
 def quantile_loss(
         preds: Sequence,
@@ -48,7 +50,12 @@ def train(
     """
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'])
+
     best_val_loss = float('inf')
+    best_crps = float('inf')
+    y_test = [y for x, y in test_loader]
+    y_test = torch.cat(y_test)
+    y_test = y_test.reshape([-1])
 
     for epoch in range(config['epochs']):
         model.train()
@@ -62,11 +69,19 @@ def train(
             optimizer.step()
             total_loss += loss.item()
 
-        test_loss = evaluate(model, test_loader, device)
+        #test_loss = evaluate(model, test_loader, device)
+        #print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
+        #      Test Loss {test_loss:.4f}")
+        #if test_loss < best_val_loss:
+        #    best_val_loss = test_loss
+        #    torch.save(model.state_dict(), SAVE_PATH / 'model_wts_loss.pt')
+
+        y_pred = predict(model, test_loader, device)
+        crps = get_mean_crps(y_pred, y_test, model.quantiles)
         print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
-              Test Loss {test_loss:.4f}")
-        if test_loss < best_val_loss:
-            best_val_loss = test_loss
+              CRPS {crps:.4f}")
+        if crps < best_crps:
+            best_crps = crps
             torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
     
     model.load_state_dict(torch.load(SAVE_PATH / 'model_wts.pt'))
