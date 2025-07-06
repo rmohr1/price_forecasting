@@ -3,6 +3,7 @@ from typing import Sequence
 
 import torch
 from torch.utils.data import DataLoader
+from sklearn.preprocessing import StandardScaler
 
 from price_forecasting.utils.scoring_tools import get_mean_crps
 
@@ -33,6 +34,7 @@ def train(
         model: torch.nn, 
         train_loader: DataLoader, 
         test_loader: DataLoader, 
+        y_scaler: StandardScaler,
         config: dict, 
         SAVE_PATH: Path,
         device: torch.device,
@@ -43,6 +45,7 @@ def train(
         model: torch model to be trained
         train_loader: training set DataLoader object
         test_loader: test set DataLoader object
+        y_scaler: scaler for y data
         config: dict of config values
         save_path: directory to save model
         device: torch device type (cpu, gpu)
@@ -55,6 +58,7 @@ def train(
     best_crps = float('inf')
     y_test = [y for x, y in test_loader]
     y_test = torch.cat(y_test)
+    y_test = y_scaler.inverse_transform(y_test)
     y_test = y_test.reshape([-1])
 
     for epoch in range(config['epochs']):
@@ -77,6 +81,7 @@ def train(
         #    torch.save(model.state_dict(), SAVE_PATH / 'model_wts_loss.pt')
 
         y_pred = predict(model, test_loader, device)
+        y_pred = y_scaler.inverse_transform(y_pred)
         crps = get_mean_crps(y_pred, y_test, model.quantiles)
         print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
               CRPS {crps:.4f}")

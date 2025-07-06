@@ -74,7 +74,7 @@ def load_and_train(MODEL_DIR, config=None):
         dropout=config['dropout'],
     )
 
-    y_pred = train(model, train_loader, val_loader, config, MODEL_DIR, device)
+    y_pred = train(model, train_loader, val_loader, y_scaler, config, MODEL_DIR, device)
     y_pred = y_scaler.inverse_transform(y_pred)
 
     np.save(MODEL_DIR / 'y_pred.npy', y_pred)
