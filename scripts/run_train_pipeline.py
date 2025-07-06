@@ -1,7 +1,7 @@
 import argparse
 
 from price_forecasting.config import MODELS_DIR
-from price_forecasting.train.train_lstm_model import load_and_train
+from price_forecasting.train.train_pipeline import load_and_train
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

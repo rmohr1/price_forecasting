@@ -1,4 +1,4 @@
-from price_forecasting.train.train_lstm_model import load_and_train
+from price_forecasting.train.train_pipeline import load_and_train
 
 
 def test_load_and_train(tmp_path):
