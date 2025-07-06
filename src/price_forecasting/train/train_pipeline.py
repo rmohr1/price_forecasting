@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader, TensorDataset
 
 from price_forecasting.config import PROCESSED_DATA_DIR
-from price_forecasting.models.quantile_lstm import QuantileLSTM
+from price_forecasting.models.model_factory import build_model
 from price_forecasting.train.trainer import train
 
 
@@ -67,12 +67,8 @@ def load_and_train(MODEL_DIR, config=None):
     train_loader = create_dataloader(X_train, y_train, config['batch_size'])
     val_loader = create_dataloader(X_test, y_test, config['batch_size'])
 
-    model = QuantileLSTM(
-        input_size=X_train.shape[-1],
-        hidden_size=config['hidden_size'],
-        quantiles=config['quantiles'],
-        dropout=config['dropout'],
-    )
+    config['input_size'] = X_train.shape[-1]
+    model = build_model(config)
 
     y_pred = train(model, train_loader, val_loader, y_scaler, config, MODEL_DIR, device)
     y_pred = y_scaler.inverse_transform(y_pred)

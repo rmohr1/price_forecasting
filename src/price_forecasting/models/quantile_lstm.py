@@ -11,6 +11,7 @@ class QuantileLSTM(nn.Module):
         hidden_size: int=64,
         num_layers: int=2,
         dropout: float=0.2,
+        **kwargs
     )->nn.Module:
     
         super(QuantileLSTM, self).__init__()
