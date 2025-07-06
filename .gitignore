@@ -17,6 +17,7 @@ __pycache__/
 # Model files
 *.pt
 *.npy
+trial*/
 
 # Scratch
 scratch/
