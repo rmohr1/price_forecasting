@@ -68,6 +68,11 @@ def train(
         if test_loss < best_val_loss:
             best_val_loss = test_loss
             torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
+    
+    model.load_state_dict(torch.load(SAVE_PATH / 'model_wts.pt'))
+    y_pred = predict(model, test_loader, device)
+    return y_pred
+    
 
 def evaluate(model, test_loader, device) -> float:
     """Evaluate a torch model against test set.
@@ -93,9 +98,12 @@ def evaluate(model, test_loader, device) -> float:
 
 def predict(model, test_loader, device):
     model.eval()
-    preds = []
+    y_pred = []
     with torch.no_grad():
         for x, y in test_loader:
             x, y = x.to(device), y.to(device)
-            preds.append(model(x))
-    return preds
+            yi = model(x)
+            y_pred.append(yi)
+    y_pred = torch.cat(y_pred)
+    y_pred = y_pred.reshape([-1, y_pred.shape[-1]])
+    return y_pred

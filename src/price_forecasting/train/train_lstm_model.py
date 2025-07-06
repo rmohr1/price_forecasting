@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import torch
 import yaml
@@ -66,4 +67,7 @@ def load_and_train(MODEL_DIR):
         quantiles=config['quantiles']
     )
 
-    train(model, train_loader, val_loader, config, MODEL_DIR, device)
+    y_pred = train(model, train_loader, val_loader, config, MODEL_DIR, device)
+    y_pred = y_scaler.inverse_transform(y_pred)
+
+    np.save(MODEL_DIR / 'y_pred.npy', y_pred)
