@@ -21,6 +21,7 @@ dependencies:
   - lightgbm
   - shap
   - properscoring
+  - optuna
   - pip
   - pip:
       - -e .
