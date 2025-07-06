@@ -12,11 +12,6 @@ from price_forecasting.models.quantile_lstm import QuantileLSTM
 from price_forecasting.train.trainer import train
 
 
-# Load config
-def load_config(path: str) -> dict:
-    with open(path, 'r') as f:
-        return yaml.safe_load(f)
-
 # Wrap as DataLoaders
 def create_dataloader(x, y, batch_size):
     x_tensor = torch.tensor(x, dtype=torch.float32)
