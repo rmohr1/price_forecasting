@@ -1,6 +1,6 @@
 ## 📦 environment.yml (Python Environment)
 
-name: nodal-forecasting
+name: price_forecasting
 channels:
   - conda-forge
   - defaults
@@ -14,12 +14,9 @@ dependencies:
   - jupyterlab
   - jupyter
   - plotly
-  - pymc
   - pytorch
   - pytest
   - requests
-  - lightgbm
-  - shap
   - properscoring
   - optuna
   - pip
