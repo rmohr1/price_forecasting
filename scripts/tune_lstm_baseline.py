@@ -7,7 +7,7 @@ import pandas as pd
 import yaml
 
 from price_forecasting.config import MODELS_DIR, PROCESSED_DATA_DIR
-from price_forecasting.train.train_lstm_model import load_and_train
+from price_forecasting.train.train_pipeline import load_and_train
 from price_forecasting.utils.scoring_tools import get_mean_crps
 
 # optuna settings
