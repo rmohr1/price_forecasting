@@ -29,6 +29,8 @@ Implementation of model tuning via Optuna
 
 ```text
 price_forecasting/
+├── reports/ # Directory for clean modeling reports
+│ ├── html # HTML formatted reports
 ├── notebooks/ # Visualizations, evaluation notebooks
 ├── scripts/ # Run scripts (training, tuning, results generation)
 ├── models/ # Saved weights, predictions, configs per model
@@ -53,3 +55,5 @@ To recreate the environment:
 conda env create -f environment.yml
 conda activate price_forecasting
 ```
+
+To view summary reports load the HTML files in reports/html
