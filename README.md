@@ -13,13 +13,21 @@ This is not a production-grade system, but rather a scoped technical demonstrati
 
 ## Highlights
 
-- Data Pipeline: Modular scripts for pulling nodal data using CAISO OASIS API. Cleaning scripts and option for version control.
-- Modular Neural Network Models: A baseline LSTM model included with functionality to define and plug in new models.
-- Evaluation Metrics: Tools to calculate CRPS and notebooks to load and compare coverage, spread, and bias between models. 
-- Hyperparameter Tuning: Implementation of model tuning via Optuna
+### Data Pipeline 
+Modular scripts for pulling nodal data using CAISO OASIS API. Cleaning scripts and option for version control.
+
+### Modular Neural Network Models
+A baseline LSTM model included with functionality to define and plug in new models.
+
+### Evaluation Metrics
+Tools to calculate CRPS and notebooks to load and compare coverage, spread, and bias between models. 
+
+### Hyperparameter Tuning
+Implementation of model tuning via Optuna
 
 ## Project Structure
 
+```text
 price_forecasting/
 ├── notebooks/ # Visualizations, evaluation notebooks
 ├── scripts/ # Run scripts (training, tuning, results generation)
@@ -35,6 +43,7 @@ price_forecasting/
 ├── environment.yml # Conda environment
 ├── pyproject.toml # Project metadata
 └── README.md
+```
 
 ## Getting Started
 
@@ -43,3 +52,4 @@ To recreate the environment:
 ```bash
 conda env create -f environment.yml
 conda activate price_forecasting
+```
