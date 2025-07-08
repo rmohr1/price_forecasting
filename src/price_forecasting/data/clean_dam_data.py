@@ -2,10 +2,12 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 
+from price_forecasting.config import RAW_DATA_DIR, CLEANED_DATA_DIR
+
 # CONFIGURATION
-INPUT_FILE = "../../data/raw/dam_prc/dataset.csv"
-OUTPUT_FILE_5MIN = "../../data/processed/dam_cleaned_5min.csv"
-OUTPUT_FILE_HOURLY = "../../data/processed/dam_cleaned_hourly.csv"
+INPUT_FILE = RAW_DATA_DIR / "dam_prc/dataset.csv"
+OUTPUT_FILE_5MIN = CLEANED_DATA_DIR / "dam_cleaned_5min.csv"
+OUTPUT_FILE_HOURLY = CLEANED_DATA_DIR / "dam_cleaned_hourly.csv"
 TIME_COLUMN = "INTERVALSTARTTIME_GMT"
 PRICE_COLUMN = "LMP_PRC"
 
