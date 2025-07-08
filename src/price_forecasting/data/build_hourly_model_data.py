@@ -1,15 +1,17 @@
 import pandas as pd
 import os
 
+from price_forecasting.config import PROCESSED_DATA_DIR, CLEANED_DATA_DIR
+
 # CONFIGURATION
 TIME_COLUMN = "INTERVALSTARTTIME_GMT"
 
-RTM_FILE = "../../data/processed/rtm_cleaned_hourly.csv"
-DAM_FILE = "../../data/processed/dam_cleaned_hourly.csv"
-LOAD_FILE = "../../data/processed/demand_cleaned_hourly.csv"
-RTPD_DMND_FILE = "../../data/processed/rtpd_dmnd_cleaned_hourly.csv"
-RTPD_PRC_FILE = "../../data/processed/rtpd_prc_cleaned_hourly.csv"
-OUTPUT_FILE = "../../data/processed/model_ready_dataset.csv"
+RTM_FILE = CLEANED_DATA_DIR / "rtm_cleaned_hourly.csv"
+DAM_FILE = CLEANED_DATA_DIR / "dam_cleaned_hourly.csv"
+LOAD_FILE = CLEANED_DATA_DIR / "demand_cleaned_hourly.csv"
+RTPD_DMND_FILE = CLEANED_DATA_DIR / "rtpd_dmnd_cleaned_hourly.csv"
+RTPD_PRC_FILE = CLEANED_DATA_DIR / "rtpd_prc_cleaned_hourly.csv"
+OUTPUT_FILE = PROCESSED_DATA_DIR / "model_ready_dataset.csv"
 
 # Ensure output directory exists
 os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
