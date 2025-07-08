@@ -11,7 +11,7 @@ DAM_FILE = CLEANED_DATA_DIR / "dam_cleaned_hourly.csv"
 LOAD_FILE = CLEANED_DATA_DIR / "demand_cleaned_hourly.csv"
 RTPD_DMND_FILE = CLEANED_DATA_DIR / "rtpd_dmnd_cleaned_hourly.csv"
 RTPD_PRC_FILE = CLEANED_DATA_DIR / "rtpd_prc_cleaned_hourly.csv"
-OUTPUT_FILE = PROCESSED_DATA_DIR / "model_ready_dataset.csv"
+OUTPUT_FILE = CLEANED_DATA_DIR / "model_ready_dataset.csv"
 
 # Ensure output directory exists
 os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
