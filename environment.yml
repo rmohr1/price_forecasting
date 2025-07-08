@@ -1,4 +1,4 @@
-## 📦 environment.yml (Python Environment)
+## environment.yml (Python Environment)
 
 name: price_forecasting
 channels:
@@ -7,6 +7,7 @@ channels:
 dependencies:
   - python=3.11
   - pandas
+  - pyarrow
   - numpy
   - matplotlib
   - scikit-learn
