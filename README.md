@@ -1,6 +1,6 @@
 # price_forecasting
 
-Forecasting real-time electricity prices at CAISO nodes using day-ahead market data and neural network models.
+Forecasting real-time electricity prices at CAISO nodes using day-ahead market data and pytorch LSTM neural network models.
 
 ## Objectives
 
@@ -35,7 +35,7 @@ price_forecasting/
 ├── data/ # Raw and processed data (ignored in git)
 ├── src/price_forecasting/
 │ ├── data/ # Pulling and cleaning logic
-│ ├── models/ # Model architectures
+│ ├── models/ # pytorch model architectures
 │ ├── train/ # Training methods and pipelines
 │ ├── utils/ # Shared utilities and scoring functions
 │ ├── config.py # Relative paths and configurations
