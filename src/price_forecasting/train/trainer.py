@@ -84,7 +84,7 @@ def train(
             test_loss = evaluate(model, test_loader, device)
             print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
                   Test Loss {test_loss:.4f}")
-            if test_loss < best_val_loss:
+            if test_loss < best_val_loss and total_loss/len(train_loader) < 1.0:
                 best_val_loss = test_loss
                 torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
                 y_pred = predict(model, test_loader, device)
@@ -97,7 +97,7 @@ def train(
             crps = get_mean_crps(y_pred, y_test, model.quantiles)
             print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
                   CRPS {crps:.4f}")
-            if crps < best_crps:
+            if (crps < best_crps) and total_loss/len(train_loader) < 1.0:
                 best_crps = crps
                 torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
                 y_pred = predict(model, test_loader, device)
