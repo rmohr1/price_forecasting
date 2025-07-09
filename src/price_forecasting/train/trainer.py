@@ -1,9 +1,10 @@
 from pathlib import Path
 from typing import Sequence
 
+import numpy as np
 import torch
-from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler
+from torch.utils.data import DataLoader
 
 from price_forecasting.utils.scoring_tools import get_mean_crps
 
@@ -38,6 +39,7 @@ def train(
         config: dict, 
         SAVE_PATH: Path,
         device: torch.device,
+        epoch_grade: str="crps",
     ):
     """Train a torch model. Saves result to config["save_path"].
 
@@ -49,10 +51,15 @@ def train(
         config: dict of config values
         save_path: directory to save model
         device: torch device type (cpu, gpu)
-
+        epoch_grade: function to decide and save the best epoch. crps or loss
     """
     model.to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'])
+    if "weight_decay" in config:
+        wd = config['weight_decay']
+    else:
+        wd = 0.0
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], weight_decay=wd)
 
     best_val_loss = float('inf')
     best_crps = float('inf')
@@ -73,25 +80,31 @@ def train(
             optimizer.step()
             total_loss += loss.item()
 
-        #test_loss = evaluate(model, test_loader, device)
-        #print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
-        #      Test Loss {test_loss:.4f}")
-        #if test_loss < best_val_loss:
-        #    best_val_loss = test_loss
-        #    torch.save(model.state_dict(), SAVE_PATH / 'model_wts_loss.pt')
+        if epoch_grade == "loss":
+            test_loss = evaluate(model, test_loader, device)
+            print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
+                  Test Loss {test_loss:.4f}")
+            if test_loss < best_val_loss:
+                best_val_loss = test_loss
+                torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
+                y_pred = predict(model, test_loader, device)
+                y_pred = y_scaler.inverse_transform(y_pred)
+                np.save(SAVE_PATH / 'y_pred.npy', y_pred)
 
-        y_pred = predict(model, test_loader, device)
-        y_pred = y_scaler.inverse_transform(y_pred)
-        crps = get_mean_crps(y_pred, y_test, model.quantiles)
-        print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
-              CRPS {crps:.4f}")
-        if crps < best_crps:
-            best_crps = crps
-            torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
-    
-    model.load_state_dict(torch.load(SAVE_PATH / 'model_wts.pt'))
-    y_pred = predict(model, test_loader, device)
-    return y_pred
+        elif epoch_grade == "crps":
+            y_pred = predict(model, test_loader, device)
+            y_pred = y_scaler.inverse_transform(y_pred)
+            crps = get_mean_crps(y_pred, y_test, model.quantiles)
+            print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
+                  CRPS {crps:.4f}")
+            if crps < best_crps:
+                best_crps = crps
+                torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
+                y_pred = predict(model, test_loader, device)
+                y_pred = y_scaler.inverse_transform(y_pred)
+                np.save(SAVE_PATH / 'y_pred.npy', y_pred)
+        else:
+            raise ValueError("epoch_grade not recognized. Must be loss or crps")
     
 
 def evaluate(model, test_loader, device) -> float:
