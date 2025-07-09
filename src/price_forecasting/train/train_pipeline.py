@@ -70,7 +70,9 @@ def load_and_train(MODEL_DIR, config=None):
     config['input_size'] = X_train.shape[-1]
     model = build_model(config)
 
-    y_pred = train(model, train_loader, val_loader, y_scaler, config, MODEL_DIR, device)
-    y_pred = y_scaler.inverse_transform(y_pred)
+    if "epoch_grade" in config:
+        eg = config["epoch_grade"]
+    else:
+        eg = "crps"
 
-    np.save(MODEL_DIR / 'y_pred.npy', y_pred)
+    train(model, train_loader, val_loader, y_scaler, config, MODEL_DIR, device, epoch_grade=eg)
