@@ -1,4 +1,4 @@
-from pull_data import fetch_and_cache_data
+from price_forecasting.data.pull_data import fetch_and_cache_data
 
 
 # CONFIGURATION
