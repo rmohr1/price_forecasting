@@ -41,7 +41,10 @@ def get_df(
 
         else:
             csv = z.open(z.namelist()[0])  # ignores all but first file in zip
-            df = pd.read_csv(csv, parse_dates=parse_dates)
+            #fmt = "%Y-%m-%dT%H:%M:%S%z"
+            #df = pd.read_csv(csv, parse_dates=parse_dates, date_format=fmt)
+
+            df = pd.read_csv(csv)
 
             if sort_values:
                 df = df.sort_values(sort_values).reset_index(drop=True)
@@ -56,7 +59,7 @@ def oasis_api_pull(
         market: str, 
         start: datetime, 
         end: datetime, 
-        params: dict, 
+        params: dict={}, 
         timeout=20
 ) -> pd.DataFrame:
     """
@@ -128,7 +131,7 @@ def fetch_and_cache_data(
         start_date: str, 
         end_date: str, 
         dir_name: str,
-        params: dict,
+        params: dict={},
         chunk_days: int = 7,
         timeout=20
 ):
