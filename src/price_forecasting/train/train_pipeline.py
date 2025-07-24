@@ -75,4 +75,5 @@ def load_and_train(MODEL_DIR, config=None):
     else:
         eg = "crps"
 
-    train(model, train_loader, val_loader, y_scaler, config, MODEL_DIR, device, epoch_grade=eg)
+    score = train(model, train_loader, val_loader, y_scaler, config, MODEL_DIR, device, epoch_grade=eg)
+    return score
