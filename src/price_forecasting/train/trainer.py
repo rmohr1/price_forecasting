@@ -105,6 +105,10 @@ def train(
                 np.save(SAVE_PATH / 'y_pred.npy', y_pred)
         else:
             raise ValueError("epoch_grade not recognized. Must be loss or crps")
+    if epoch_grade == "loss":
+        return best_val_loss
+    elif epoch_grade == "crps":
+        return best_crps
     
 
 def evaluate(model, test_loader, device) -> float:
