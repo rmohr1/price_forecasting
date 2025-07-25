@@ -25,7 +25,6 @@ def test_load_and_train_LSTM(tmp_path):
     with np.load(tmp_path / 'y_pred.npz') as y_pred:
         assert(y_pred['0.5'].shape == (113, 288))
 
-"""
 def test_load_and_train_EncoderDecoder(tmp_path):
     config = {
         "model": "EncoderDecoder",
@@ -43,8 +42,13 @@ def test_load_and_train_EncoderDecoder(tmp_path):
     assert tmp_path.exists()
     assert (tmp_path / 'config.yaml').exists
     assert (tmp_path / 'model_wts.pt').exists
-    assert (tmp_path / 'y_pred.npy').exists
+    assert (tmp_path / 'y_pred.npz').exists
+    assert (tmp_path / 'y_scaler.pkl').exists
 
+    with np.load(tmp_path / 'y_pred.npz') as y_pred:
+        assert(y_pred['0.5'].shape == (113, 288))
+
+"""
 def test_load_and_train_StudentTMixture(tmp_path):
     config = {
         "model": "StudentTLSTM",
