@@ -48,18 +48,16 @@ def test_load_and_train_EncoderDecoder(tmp_path):
     with np.load(tmp_path / 'y_pred.npz') as y_pred:
         assert(y_pred['0.5'].shape == (113, 288))
 
-"""
 def test_load_and_train_StudentTMixture(tmp_path):
     config = {
         "model": "StudentTLSTM",
         "hidden_size": 32,
-        "quantiles": [],
         "learning_rate": 0.01,
         "batch_size": 100,
         "epochs": 1,
         "dropout": 0.1,
-        "loss_function": "log_likelihood",
         "data_source": 'v1',
+        "N_mix": 3,
     }
 
     load_and_train(tmp_path, config=config)
@@ -68,4 +66,6 @@ def test_load_and_train_StudentTMixture(tmp_path):
     assert (tmp_path / 'config.yaml').exists
     assert (tmp_path / 'model_wts.pt').exists
     assert (tmp_path / 'y_pred.npy').exists
-"""
+
+    with np.load(tmp_path / 'y_pred.npz') as y_pred:
+        assert(y_pred['df'].shape == (113, 288, 3))
