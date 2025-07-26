@@ -84,4 +84,4 @@ class StudentTLSTM(nn.Module):
             Categorical(probs=weight),
             StudentT(df=df, loc=loc, scale=scale)
         )
-        return -dist.log_prob(target).mean()
+        return -dist.log_prob(target).sum()
