@@ -1,0 +1,8 @@
+model: "StudentTLSTM"
+hidden_size: 100
+learning_rate: 0.00001
+batch_size: 8
+epochs: 100
+dropout: 0.2
+data_source: 'v1'
+N_mix: 2
