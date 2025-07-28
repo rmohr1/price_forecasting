@@ -57,17 +57,24 @@ def load_and_train(MODEL_DIR, config=None):
     # reshape train to daily sequence
     n_days_train = len(y_train)//pts_per_day
     X_train = X_train.reshape([n_days_train,pts_per_day,-1])
+    X_train = np.concatenate((np.roll(X_train, 1, axis=0), X_train), axis=1)[1:]
+
     y_train = y_train.reshape([n_days_train,pts_per_day])
+    y_train = np.concatenate((np.roll(y_train, 1, axis=0), y_train), axis=1)[1:]
 
     # reshape test to daily sequence
     n_days_test = len(y_test)//pts_per_day
     X_test = X_test.reshape([n_days_test,pts_per_day,-1])
+    X_test = np.concatenate((np.roll(X_test, 1, axis=0), X_test), axis=1)[1:]
+
     y_test = y_test.reshape([n_days_test,pts_per_day])
+    y_test = np.concatenate((np.roll(y_test, 1, axis=0), y_test), axis=1)[1:]
 
     train_loader = create_dataloader(X_train, y_train, config['batch_size'])
     val_loader = create_dataloader(X_test, y_test, config['batch_size'])
 
     config['input_size'] = X_train.shape[-1]
+    config['output_size'] = pts_per_day
     model = build_model(config)
 
     if "epoch_grade" in config:

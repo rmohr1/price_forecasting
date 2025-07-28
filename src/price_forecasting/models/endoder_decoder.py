@@ -74,7 +74,8 @@ class EncoderDecoder(nn.Module):
         losses = []
         for q_str, pred in preds.items():
             q = float(q_str)
-            errors = target - pred
+            output_size = pred.shape[1]
+            errors = target[:, -output_size:] - pred
             losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(1))
-        loss = torch.mean(torch.sum(torch.cat(losses, dim=1), dim=1))
+        loss = torch.cat(losses, dim=1)
         return loss 

@@ -40,10 +40,10 @@ def train(
 
     best_val_loss = float('inf')
     #best_crps = float('inf')
-    y_test = [y for x, y in test_loader]
-    y_test = torch.cat(y_test)
-    y_test = y_scaler.inverse_transform(y_test)
-    y_test = y_test.reshape([-1])
+    #y_test = [y for x, y in test_loader]
+    #y_test = torch.cat(y_test)
+    #y_test = y_scaler.inverse_transform(y_test)
+    #y_test = y_test.reshape([-1])
 
     for epoch in range(config['epochs']):
         model.train()
@@ -55,11 +55,11 @@ def train(
             loss = model.loss(preds, y)
             loss.mean().backward()
             optimizer.step()
-            total_loss += loss.item()
+            total_loss += loss.sum()
 
         test_loss = evaluate(model, test_loader, device)
         print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader.dataset)/288:.4f}, \
-              Test Loss {test_loss/288:.4f}")
+              Test Loss {test_loss/len(test_loader.dataset)/288:.4f}")
         #print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader.dataset):.4f}, \
         #      Test Loss {test_loss:.4f}")
         if test_loss < best_val_loss:
@@ -120,8 +120,8 @@ def evaluate(model, test_loader, device) -> float:
             x, y = x.to(device), y.to(device)
             preds = model(x)
             loss = model.loss(preds, y)
-            total_loss += loss.item()
-    return total_loss / len(test_loader.dataset)
+            total_loss += loss.sum()
+    return total_loss
 
 def save_model(model, test_loader, device, y_scaler, SAVE_PATH):
     model.eval()
