@@ -8,7 +8,8 @@ from torch.distributions import Categorical, MixtureSameFamily, StudentT
 class StudentTLSTM(nn.Module):
     def __init__(
         self,
-        input_size: int=288,
+        input_size: int=288*2,
+        output_size: int=288,
         hidden_size: int=64,
         num_layers: int=2,
         dropout: float=0.2,
@@ -24,18 +25,14 @@ class StudentTLSTM(nn.Module):
             dropout=dropout,
             batch_first=True,
         )
+        self.output_size = output_size #the number of data points kept after warmup
+
         self.weight_head = nn.Linear(hidden_size, N_mix)
         self.df_head = nn.Linear(hidden_size, N_mix)
         self.loc_head = nn.Linear(hidden_size, N_mix)
         self.scale_head = nn.Linear(hidden_size, N_mix)
 
     def forward(self, x):
-        """Return distribution definitions for a student-t mix distribution.
-
-        Return Shape: [batch_size, 4, N_mix]
-        Dist Structure: [[weights], [locs], [scales], [dfs]]
-        
-        """
         out, _ = self.lstm(x)
 
         weight = F.softmax(self.weight_head(out), dim=-1)
@@ -44,10 +41,10 @@ class StudentTLSTM(nn.Module):
         df = 2.1 + F.softplus(self.df_head(out))
         
         dist_params = {
-            "df":df,
-            "scale":scale,
-            "weight":weight,
-            "loc":loc
+            "df":df[:,-self.output_size:,:],
+            "scale":scale[:,-self.output_size:,:],
+            "weight":weight[:,-self.output_size:,:],
+            "loc":loc[:,-self.output_size:,:],
         }
 
         return dist_params
@@ -84,4 +81,5 @@ class StudentTLSTM(nn.Module):
             Categorical(probs=weight),
             StudentT(df=df, loc=loc, scale=scale)
         )
-        return -dist.log_prob(target).sum()
+
+        return -dist.log_prob(target[:, -self.output_size:])

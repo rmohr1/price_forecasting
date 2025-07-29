@@ -40,10 +40,10 @@ def train(
 
     best_val_loss = float('inf')
     #best_crps = float('inf')
-    y_test = [y for x, y in test_loader]
-    y_test = torch.cat(y_test)
-    y_test = y_scaler.inverse_transform(y_test)
-    y_test = y_test.reshape([-1])
+    #y_test = [y for x, y in test_loader]
+    #y_test = torch.cat(y_test)
+    #y_test = y_scaler.inverse_transform(y_test)
+    #y_test = y_test.reshape([-1])
 
     for epoch in range(config['epochs']):
         model.train()
@@ -55,16 +55,16 @@ def train(
             loss = model.loss(preds, y)
             loss.mean().backward()
             optimizer.step()
-            total_loss += loss.item()
+            total_loss += loss.sum()
 
         test_loss = evaluate(model, test_loader, device)
         print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader.dataset)/288:.4f}, \
-              Test Loss {test_loss/288:.4f}")
+              Test Loss {test_loss/len(test_loader.dataset)/288:.4f}")
         #print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader.dataset):.4f}, \
         #      Test Loss {test_loss:.4f}")
         if test_loss < best_val_loss:
             best_val_loss = test_loss
-            save_model(model, test_loader, device, y_scaler, SAVE_PATH)
+            save_model(model, test_loader, train_loader, device, y_scaler, SAVE_PATH)
 
     return best_val_loss
 
@@ -120,13 +120,13 @@ def evaluate(model, test_loader, device) -> float:
             x, y = x.to(device), y.to(device)
             preds = model(x)
             loss = model.loss(preds, y)
-            total_loss += loss.item()
-    return total_loss / len(test_loader.dataset)
+            total_loss += loss.sum()
+    return total_loss
 
-def save_model(model, test_loader, device, y_scaler, SAVE_PATH):
+def save_model(model, test_loader, train_loader, device, y_scaler, SAVE_PATH):
     model.eval()
-    y_pred = None
     with torch.no_grad():
+        y_pred = None
         for x, y in test_loader:
             x, y = x.to(device), y.to(device)
             preds = model(x)
@@ -134,9 +134,21 @@ def save_model(model, test_loader, device, y_scaler, SAVE_PATH):
                 y_pred = preds
             else:
                 y_pred = {k: torch.cat([y_pred[k], preds[k]], dim=0) for k in y_pred}
+                            
+        y_pred_train = None
+        for x, y in train_loader:
+            x, y = x.to(device), y.to(device)
+            preds = model(x)
+            if y_pred_train is None:
+                y_pred_train = preds
+            else:
+                y_pred_train = {k: torch.cat([y_pred_train[k], preds[k]], dim=0) 
+                                for k in y_pred_train}
     
     y_pred = {k: y_pred[k].numpy() for k in y_pred}
-    torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
     np.savez(SAVE_PATH / 'y_pred.npz', **y_pred)
+    y_pred_train = {k: y_pred_train[k].numpy() for k in y_pred_train}
+    np.savez(SAVE_PATH / 'y_pred_train.npz', **y_pred_train)
+    torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
     with open(SAVE_PATH / "y_scaler.pkl", "wb") as f:
         pickle.dump(y_scaler, f)

@@ -8,6 +8,7 @@ class QuantileLSTM(nn.Module):
     def __init__(
         self,
         input_size: int=288,
+        output_size: int=288,
         quantiles: Sequence=[0.05, 0.5, 0.95],
         hidden_size: int=64,
         num_layers: int=2,
@@ -23,6 +24,8 @@ class QuantileLSTM(nn.Module):
             dropout=dropout,
             batch_first=True,
         )
+        self.output_size = output_size #the number of data points kept after warmup
+
         self.quantiles = quantiles
         self.output_layer = nn.Linear(hidden_size, len(quantiles))
 
@@ -31,7 +34,9 @@ class QuantileLSTM(nn.Module):
         out = self.output_layer(out)
         out_dict = {}
         for i, q in enumerate(self.quantiles):
-            out_dict[str(q)] = out[:, :, i]
+            out_dict[str(q)] = out[:, -self.output_size:, i]
+            print(self.output_size)
+            print(out[:, -self.output_size:, i].shape)
         return out_dict
 
     def loss(
@@ -52,7 +57,8 @@ class QuantileLSTM(nn.Module):
         losses = []
         for q_str, pred in preds.items():
             q = float(q_str)
-            errors = target - pred
+            output_size = pred.shape[1]
+            errors = target[:, -output_size:] - pred
             losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(1))
-        loss = torch.mean(torch.sum(torch.cat(losses, dim=1), dim=1))
+        loss = torch.cat(losses, dim=1)
         return loss
