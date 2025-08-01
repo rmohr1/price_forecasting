@@ -13,11 +13,11 @@ from price_forecasting.train.trainer import train
 
 
 # Wrap as DataLoaders
-def create_dataloader(x, y, batch_size):
+def create_dataloader(x, y, batch_size, shuffle=False):
     x_tensor = torch.tensor(x, dtype=torch.float32)
     y_tensor = torch.tensor(y, dtype=torch.float32)
     return DataLoader(TensorDataset(x_tensor, y_tensor), batch_size=batch_size, 
-                      shuffle=True, num_workers=0)
+                      shuffle=shuffle, num_workers=0)
 
 def load_and_train(MODEL_DIR, config=None):
     # set up torch
@@ -70,7 +70,7 @@ def load_and_train(MODEL_DIR, config=None):
     y_test = y_test.reshape([n_days_test,pts_per_day])
     y_test = np.concatenate((np.roll(y_test, 1, axis=0), y_test), axis=1)[1:]
 
-    train_loader = create_dataloader(X_train, y_train, config['batch_size'])
+    train_loader = create_dataloader(X_train, y_train, config['batch_size'], shuffle=True)
     val_loader = create_dataloader(X_test, y_test, config['batch_size'])
 
     config['input_size'] = X_train.shape[-1]
