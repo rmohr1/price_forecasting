@@ -1,5 +1,6 @@
 from typing import Sequence
 
+import scipy.stats as stats
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -56,6 +57,8 @@ class NormalSkew(nn.Module):
         hidden_size: int=64,
         num_layers: int=2,
         dropout: float=0.2,
+        alpha: float=3.0,
+        beta: float=0.1,
         **kwargs
     )->nn.Module:
     
@@ -68,6 +71,9 @@ class NormalSkew(nn.Module):
             batch_first=True,
         )
         self.output_size = output_size #the number of data points kept after warmup
+
+        self.alpha = alpha #weighting scale parameter
+        self.beta = beta #weighting range parameter
 
         self.skew_head = nn.Linear(hidden_size, 1)
         self.tailweight_head = nn.Linear(hidden_size, 1)
@@ -100,8 +106,8 @@ class NormalSkew(nn.Module):
         """Calculate log likelihood loss function using a student t distribution mix.
 
         Args:
-            dist: probability dist predictions from model
-            target: target value to be trained on
+            params: probability dist parameter predictions from model
+            target: target values to be trained on
 
         Returns:
             loss: 
@@ -117,13 +123,40 @@ class NormalSkew(nn.Module):
         #dist = TransformedDistribution(dist, transform)
         dist = get_dist(params)
         y_true = target[:, -self.output_size:]
-        alpha = 3.0
-        beta = 0.1
 
-        #residual = torch.abs(dist.mean() - y_true)
-        #weight = 1.0 + alpha * torch.tanh(beta * residual)
-        weight = 1.0 + alpha * torch.tanh(beta * torch.abs(y_true))
+        mean = dist.rsample((500,)).mean(dim=0)
+        residual = torch.abs(mean - y_true)
+        weight = 1.0 + self.alpha * torch.tanh(self.beta * residual)
+
+        #weight = 1.0 + self.alpha * torch.tanh(self.beta * torch.abs(y_true))
+
         weighted_loss = -dist.log_prob(y_true) * weight
 
         #return -dist.log_prob(target[:, -self.output_size:])
         return weighted_loss
+    
+    def epoch_score(self, test_loader, device):
+        self.eval()
+        y_test = []
+        with torch.no_grad():
+            y_pred = None
+            for x, y in test_loader:
+                x, y = x.to(device), y.to(device)
+                preds = self(x)
+                if y_pred is None:
+                    y_pred = preds
+                else:
+                    y_pred = {k: torch.cat([y_pred[k], preds[k]], dim=0) for k in y_pred}
+                y_test.append(y[:, -self.output_size:])
+
+        y_test = torch.concat(y_test, dim=0).reshape(-1)
+        tailweight = y_pred['tailweight'].reshape(-1)
+        skew = y_pred['skew'].reshape(-1)
+        loc = y_pred['loc'].reshape(-1)
+        scale = y_pred['scale'].reshape(-1)
+
+        y_test_scaled = torch.sinh(torch.asinh(y_test / tailweight) - skew)
+
+        PIT = stats.norm.cdf(y_test_scaled, loc, scale)
+        score = stats.cramervonmises(PIT, 'uniform').statistic
+        return score
