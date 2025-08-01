@@ -1,0 +1,10 @@
+alpha: 5.029630013086475
+batch_size: 16
+beta: 0.13908636418223919
+data_source: v1
+dropout: 0.0
+epochs: 100
+hidden_size: 75
+learning_rate: 0.001
+model: NormalSkew
+weight_decay: 3.7421929247704005e-05
