@@ -1,5 +1,6 @@
 import pickle
 from pathlib import Path
+import time
 from typing import Sequence
 
 import numpy as np
@@ -38,7 +39,9 @@ def train(
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], weight_decay=wd)
 
-    best_val_loss = float('inf')
+    best_score = float('inf')
+    #best_val_loss = float('inf')
+
     #best_crps = float('inf')
     #y_test = [y for x, y in test_loader]
     #y_test = torch.cat(y_test)
@@ -46,6 +49,7 @@ def train(
     #y_test = y_test.reshape([-1])
 
     for epoch in range(config['epochs']):
+        t_loop = time.time()
         model.train()
         total_loss = 0.0
         for x, y in train_loader:
@@ -58,15 +62,22 @@ def train(
             total_loss += loss.sum()
 
         test_loss = evaluate(model, test_loader, device)
-        print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader.dataset)/288:.4f}, \
-              Test Loss {test_loss/len(test_loader.dataset)/288:.4f}")
+        epoch_score = model.epoch_score(test_loader, device)
         #print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader.dataset):.4f}, \
         #      Test Loss {test_loss:.4f}")
-        if test_loss < best_val_loss:
-            best_val_loss = test_loss
+        #if test_loss < best_val_loss:
+        #    best_val_loss = test_loss
+        #    save_model(model, test_loader, train_loader, device, y_scaler, SAVE_PATH)
+        if epoch_score < best_score:
+            best_score = epoch_score
             save_model(model, test_loader, train_loader, device, y_scaler, SAVE_PATH)
 
-    return best_val_loss
+        print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader.dataset)/288:.4f}, \
+                Test Loss {test_loss/len(test_loader.dataset)/288:.4f}, \
+                Score {epoch_score:.4f}, \
+                Time {time.time() - t_loop:.1f}")
+
+    return best_score
 
     """
         if epoch_grade == "loss":
