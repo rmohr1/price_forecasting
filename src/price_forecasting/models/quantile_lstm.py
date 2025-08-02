@@ -35,8 +35,6 @@ class QuantileLSTM(nn.Module):
         out_dict = {}
         for i, q in enumerate(self.quantiles):
             out_dict[str(q)] = out[:, -self.output_size:, i]
-            print(self.output_size)
-            print(out[:, -self.output_size:, i].shape)
         return out_dict
 
     def loss(
@@ -60,5 +58,28 @@ class QuantileLSTM(nn.Module):
             output_size = pred.shape[1]
             errors = target[:, -output_size:] - pred
             losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(1))
-        loss = torch.cat(losses, dim=1)
+        loss = torch.cat(losses, dim=1).sum(dim=1)
         return loss
+
+    def epoch_score(self, test_loader, device):
+        """Evaluate a torch model against test set.
+
+        Args:
+            model: torch model to be trained
+            test_loader: test set DataLoader object
+            device: torch device type (cpu, gpu)
+    
+        Returns:
+            mean quantile loss over test set
+
+        """
+        self.eval()
+        total_loss = []
+        with torch.no_grad():
+            for x, y in test_loader:
+                x, y = x.to(device), y.to(device)
+                preds = self(x)
+                loss = self.loss(preds, y)
+                total_loss.append(loss)
+        total_loss = torch.cat(total_loss)
+        return total_loss.mean()
