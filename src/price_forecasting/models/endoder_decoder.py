@@ -52,4 +52,30 @@ class EncoderDecoder(nn.Module):
 
             decoder_input = output.unsqueeze(1) #feed back output to input
 
-        return outputs
+        out_dict = {}
+        for i, q in enumerate(self.quantiles):
+            out_dict[str(q)] = outputs[:, :, i]
+        return out_dict
+
+    def loss(
+        self,
+        preds: Sequence,
+        target: Sequence,
+    ):
+        """Calculate quantile loss function.
+
+        Args:
+            preds: quantile predictions from model
+            target: target value to be trained on
+
+        Returns:
+            loss: 
+        """
+        losses = []
+        for q_str, pred in preds.items():
+            q = float(q_str)
+            output_size = pred.shape[1]
+            errors = target[:, -output_size:] - pred
+            losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(1))
+        loss = torch.cat(losses, dim=1)
+        return loss 

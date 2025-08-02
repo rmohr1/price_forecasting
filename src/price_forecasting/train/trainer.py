@@ -1,4 +1,6 @@
+import pickle
 from pathlib import Path
+import time
 from typing import Sequence
 
 import numpy as np
@@ -6,30 +8,6 @@ import torch
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader
 
-from price_forecasting.utils.scoring_tools import get_mean_crps
-
-
-def quantile_loss(
-        preds: Sequence,
-        target: Sequence,
-        quantiles: Sequence,
-    ):
-    """Calculate quantile loss function.
-
-    Args:
-        preds: quantile predictions from model
-        target: target value to be trained on
-        quantles: list of quantile levels
-
-    Returns:
-        loss: 
-    """
-    losses = []
-    for i, q in enumerate(quantiles):
-        errors = target - preds[:, :, i]
-        losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(1))
-    loss = torch.mean(torch.sum(torch.cat(losses, dim=1), dim=1))
-    return loss
 
 def train(
         model: torch.nn, 
@@ -61,25 +39,47 @@ def train(
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], weight_decay=wd)
 
-    best_val_loss = float('inf')
-    best_crps = float('inf')
-    y_test = [y for x, y in test_loader]
-    y_test = torch.cat(y_test)
-    y_test = y_scaler.inverse_transform(y_test)
-    y_test = y_test.reshape([-1])
+    best_score = float('inf')
+    #best_val_loss = float('inf')
+
+    #best_crps = float('inf')
+    #y_test = [y for x, y in test_loader]
+    #y_test = torch.cat(y_test)
+    #y_test = y_scaler.inverse_transform(y_test)
+    #y_test = y_test.reshape([-1])
 
     for epoch in range(config['epochs']):
+        t_loop = time.time()
         model.train()
-        total_loss = 0
+        total_loss = 0.0
         for x, y in train_loader:
             x, y = x.to(device), y.to(device)
             optimizer.zero_grad()
             preds = model(x)
-            loss = quantile_loss(preds, y, model.quantiles)
-            loss.backward()
+            loss = model.loss(preds, y)
+            loss.mean().backward()
             optimizer.step()
-            total_loss += loss.item()
+            total_loss += loss.sum()
 
+        test_loss = evaluate(model, test_loader, device)
+        epoch_score = model.epoch_score(test_loader, device)
+        #print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader.dataset):.4f}, \
+        #      Test Loss {test_loss:.4f}")
+        #if test_loss < best_val_loss:
+        #    best_val_loss = test_loss
+        #    save_model(model, test_loader, train_loader, device, y_scaler, SAVE_PATH)
+        if epoch_score < best_score:
+            best_score = epoch_score
+            save_model(model, test_loader, train_loader, device, y_scaler, SAVE_PATH)
+
+        print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader.dataset)/288:.4f}, \
+                Test Loss {test_loss/len(test_loader.dataset)/288:.4f}, \
+                Score {epoch_score:.4f}, \
+                Time {time.time() - t_loop:.1f}")
+
+    return best_score
+
+    """
         if epoch_grade == "loss":
             test_loss = evaluate(model, test_loader, device)
             print(f"Epoch {epoch+1}: Train Loss {total_loss/len(train_loader):.4f}, \
@@ -109,6 +109,7 @@ def train(
         return best_val_loss
     elif epoch_grade == "crps":
         return best_crps
+    """
     
 
 def evaluate(model, test_loader, device) -> float:
@@ -124,23 +125,41 @@ def evaluate(model, test_loader, device) -> float:
 
     """
     model.eval()
-    losses = []
+    total_loss = 0.0
     with torch.no_grad():
         for x, y in test_loader:
             x, y = x.to(device), y.to(device)
             preds = model(x)
-            loss = quantile_loss(preds, y, model.quantiles)
-            losses.append(loss.item())
-    return sum(losses) / len(losses)
+            loss = model.loss(preds, y)
+            total_loss += loss.sum()
+    return total_loss
 
-def predict(model, test_loader, device):
+def save_model(model, test_loader, train_loader, device, y_scaler, SAVE_PATH):
     model.eval()
-    y_pred = []
     with torch.no_grad():
+        y_pred = None
         for x, y in test_loader:
             x, y = x.to(device), y.to(device)
-            yi = model(x)
-            y_pred.append(yi)
-    y_pred = torch.cat(y_pred)
-    y_pred = y_pred.reshape([-1, y_pred.shape[-1]])
-    return y_pred
+            preds = model(x)
+            if y_pred is None:
+                y_pred = preds
+            else:
+                y_pred = {k: torch.cat([y_pred[k], preds[k]], dim=0) for k in y_pred}
+                            
+        y_pred_train = None
+        for x, y in train_loader:
+            x, y = x.to(device), y.to(device)
+            preds = model(x)
+            if y_pred_train is None:
+                y_pred_train = preds
+            else:
+                y_pred_train = {k: torch.cat([y_pred_train[k], preds[k]], dim=0) 
+                                for k in y_pred_train}
+    
+    y_pred = {k: y_pred[k].numpy() for k in y_pred}
+    np.savez(SAVE_PATH / 'y_pred.npz', **y_pred)
+    y_pred_train = {k: y_pred_train[k].numpy() for k in y_pred_train}
+    np.savez(SAVE_PATH / 'y_pred_train.npz', **y_pred_train)
+    torch.save(model.state_dict(), SAVE_PATH / 'model_wts.pt')
+    with open(SAVE_PATH / "y_scaler.pkl", "wb") as f:
+        pickle.dump(y_scaler, f)

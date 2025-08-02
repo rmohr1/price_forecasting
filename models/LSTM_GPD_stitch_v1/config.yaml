@@ -1,0 +1,7 @@
+hidden_size: 64
+quantiles: [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90]
+learning_rate: 0.001
+batch_size: 8
+epochs: 100
+dropout: 0.2
+data_source: 'v1'

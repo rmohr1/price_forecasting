@@ -1,0 +1,7 @@
+model: "NormalSkew"
+hidden_size: 120
+learning_rate: 0.001
+batch_size: 8
+epochs: 100
+dropout: 0.0
+data_source: 'v1'
